@@ -22,12 +22,19 @@ from rclone import rclone
 import tempfile
 import os
 import logging
+import json
 
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s %(name)s [%(levelname)s]: %(message)s")
 
+
 class RSyncTest(unittest.TestCase):
+    def setUp(self):
+        self.cfg = """[local]
+        type = local
+        nounc = true"""
+
     def test_execute_with_wrong_command(self):
         result = rclone.with_config(None)._execute(
             ["command_not_valid", "some", "args"])
@@ -40,11 +47,58 @@ class RSyncTest(unittest.TestCase):
         self.assertIsNotNone(result.get('out'))
 
     def test_listremoted(self):
-        # TODO
-        cfg = """[local]
-        type = local
-        nounc = true"""
-        result = rclone.with_config(cfg).listremotes()
+        result = rclone.with_config(self.cfg).listremotes()
         self.assertEqual(result.get('code'), 0)
         self.assertEqual(result.get('out'), b'local:\n')
-        pass
+
+    def test_copy_and_ls(self):
+        source = "local:" + os.getcwd() + "/README.md"
+        with tempfile.TemporaryDirectory() as dest:
+            result = rclone.with_config(self.cfg).copy(
+                source, "local:" + dest)
+            self.assertEqual(result.get('code'), 0)
+            self.assertEqual(result.get('out'), b'')
+
+            result = rclone.with_config(self.cfg).ls("local:"+dest)
+            self.assertEqual(result.get('code'), 0)
+            self.assertRegex(result.get('out').decode("utf-8"),
+                             r'.*\sREADME.md.*', "README.md was not listed.")
+
+    def test_sync_and_lsjson(self):
+        source = "local:" + os.getcwd() + "/README.md"
+        with tempfile.TemporaryDirectory() as dest:
+            result = rclone.with_config(self.cfg).sync(
+                source, "local:" + dest)
+            self.assertEqual(result.get('code'), 0)
+            self.assertEqual(result.get('out'), b'')
+
+            result = rclone.with_config(self.cfg).lsjson("local:"+dest)
+            self.assertEqual(result.get('code'), 0)
+            result_json = json.loads(result.get('out').decode("utf-8"))
+            self.assertGreater(len(result_json), 0)
+            self.assertEqual(result_json[0].get('Path'), 'README.md')
+            self.assertFalse(result_json[0].get('IsDir'))
+
+    def test_copy_lsjson_and_delete(self):
+        source = "local:" + os.getcwd() + "/README.md"
+        with tempfile.TemporaryDirectory() as dest:
+            # copy
+            result = rclone.with_config(self.cfg).copy(
+                source, "local:" + dest)
+            self.assertEqual(result.get('code'), 0)
+            self.assertEqual(result.get('out'), b'')
+            # lsjson
+            result = rclone.with_config(self.cfg).lsjson("local:"+dest)
+            self.assertEqual(result.get('code'), 0)
+            result_json = json.loads(result.get('out').decode("utf-8"))
+            self.assertGreater(len(result_json), 0)
+            self.assertEqual(result_json[0].get('Path'), 'README.md')
+            self.assertFalse(result_json[0].get('IsDir'))
+            # delete
+            result = rclone.with_config(self.cfg).delete( "local:" + dest + "/README.md")
+            self.assertEqual(result.get('code'), 0)
+            # lsjson to check that the file is gone
+            result = rclone.with_config(self.cfg).lsjson("local:"+dest)
+            self.assertEqual(result.get('code'), 0)
+            result_json = json.loads(result.get('out').decode("utf-8"))
+            self.assertEqual(len(result_json), 0)

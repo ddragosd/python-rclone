@@ -39,16 +39,14 @@ class RClone:
                     command_with_args,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE) as proc:
-                # Wait for child process to terminate.
-                # Set and return returncode attribute.
-                proc.wait()
+                (out, err) = proc.communicate()
 
-                out = proc.stdout.read()
-                err = proc.stderr.read()
+                #out = proc.stdout.read()
+                #err = proc.stderr.read()
 
                 self.log.debug(out)
                 if (err):
-                    self.log.warning(err)
+                    self.log.warning(err.decode("utf-8").replace("\\n","\n"))
 
                 return {
                     "code": proc.returncode,
@@ -99,7 +97,7 @@ class RClone:
         - dest (string): A string "dest:path"
         - flags (list): Extra flags as per `rclone copy --help` flags.
         """
-        return self.run_cmd(command="copy", extra_args=flags)
+        return self.run_cmd(command="copy", extra_args=[source] + [dest] + flags)
 
     def sync(self, source, dest, flags=[]):
         """
@@ -110,7 +108,7 @@ class RClone:
         - dest (string): A string "dest:path"
         - flags (list): Extra flags as per `rclone sync --help` flags.
         """
-        return self.run_cmd(command="sync", extra_args=flags)
+        return self.run_cmd(command="sync", extra_args=[source] + [dest] + flags)
 
     def listremotes(self, flags=[]):
         """
@@ -121,6 +119,32 @@ class RClone:
         """
         return self.run_cmd(command="listremotes", extra_args=flags)
 
+    def ls(self, dest, flags=[]):
+        """
+        Executes: rclone ls remote:path [flags]
+
+        Args:
+        - dest (string): A string "remote:path" representing the location to list.
+        """
+        return self.run_cmd(command="ls", extra_args= [dest] + flags)
+
+    def lsjson(self, dest, flags=[]):
+        """
+        Executes: rclone lsjson remote:path [flags]
+
+        Args:
+        - dest (string): A string "remote:path" representing the location to list.
+        """
+        return self.run_cmd(command="lsjson", extra_args= [dest] + flags)
+
+    def delete(self, dest, flags=[]):
+        """
+        Executes: rclone delete remote:path
+
+        Args:
+        - dest (string): A string "remote:path" representing the location to delete.
+        """
+        return self.run_cmd(command="delete", extra_args=[dest] + flags)
 
 def with_config(cfg):
     """
