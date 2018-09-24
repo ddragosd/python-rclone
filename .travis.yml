@@ -18,4 +18,5 @@ cache:
   - $HOME/.ccache # compiler cache
 
 script:
+  - "curl https://rclone.org/install.sh | sudo bash"
   - "make test"
