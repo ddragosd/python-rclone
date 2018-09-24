@@ -32,7 +32,7 @@ Work in progress. Experimental.
 ## Usage
 
 ```python
-from rclone import rclone
+import rclone
 
 cfg = """[local]
 type = local
@@ -58,7 +58,7 @@ print(result.get('error'))
 Even if not all `rclone` commands have been exposed, it's possible to invoke any command using `run_cmd` method directly, as shown in the example bellow:
 
 ```python
-from rclone import rclone
+import rclone
 
 cfg = """[local]
 type = local
@@ -76,7 +76,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s %(name)s [%(levelname)s]: %(message)s")
 
-from rclone import rclone
+import rclone
 
 cfg = """[local]
 type = local

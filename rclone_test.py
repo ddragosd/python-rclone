@@ -18,7 +18,7 @@
 import unittest
 import base64
 import sys
-from rclone import rclone
+import rclone
 import tempfile
 import os
 import logging
