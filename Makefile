@@ -1,4 +1,10 @@
 .PHONY: test 
 test:
-	pylint rclone*.py
+	pylint *.py
 	python -m unittest discover -s . -p "*_test.py" -v
+
+package:
+	python3 setup.py sdist bdist_wheel
+
+publish: package
+	-twine upload --repository-url https://test.pypi.org/legacy/ dist/*

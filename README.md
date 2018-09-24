@@ -44,6 +44,7 @@ print(result.get('out'))
 print(result.get('code'))
 # 0
 print(result.get('error'))
+# b''
 ```
 
 ###  Implemented commands:
@@ -82,4 +83,11 @@ cfg = """[local]
 type = local
 nounc = true"""
 result = rclone.with_config(cfg).listremotes()
+```
+
+## Developer guide
+
+```bash
+$ pip install -r requirements.txt
+$ make test
 ```
