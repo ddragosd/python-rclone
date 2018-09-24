@@ -15,17 +15,18 @@
 # limitations under the License.
 #
 
+# pylint: disable=W0212,C0111
+
 import unittest
-import base64
-import sys
-import rclone
 import tempfile
 import os
 import logging
 import json
+import rclone
+
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s %(name)s [%(levelname)s]: %(message)s")
 
 
@@ -36,13 +37,13 @@ class RSyncTest(unittest.TestCase):
         nounc = true"""
 
     def test_execute_with_wrong_command(self):
-        result = rclone.with_config(None)._execute(
+        result = rclone.with_config(self.cfg)._execute(
             ["command_not_valid", "some", "args"])
         self.assertEqual(result.get('code'), -20)
         self.assertIsInstance(result.get('error'), FileNotFoundError)
 
     def test_execute_with_correct_command(self):
-        result = rclone.with_config(None)._execute(["echo", "123"])
+        result = rclone.with_config(self.cfg)._execute(["echo", "123"])
         self.assertEqual(result.get('code'), 0)
         self.assertIsNotNone(result.get('out'))
 
@@ -95,7 +96,8 @@ class RSyncTest(unittest.TestCase):
             self.assertEqual(result_json[0].get('Path'), 'README.md')
             self.assertFalse(result_json[0].get('IsDir'))
             # delete
-            result = rclone.with_config(self.cfg).delete( "local:" + dest + "/README.md")
+            result = rclone.with_config(self.cfg).delete(
+                "local:" + dest + "/README.md")
             self.assertEqual(result.get('code'), 0)
             # lsjson to check that the file is gone
             result = rclone.with_config(self.cfg).lsjson("local:"+dest)

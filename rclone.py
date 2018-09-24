@@ -1,3 +1,6 @@
+"""
+A Python wrapper for rclone.
+"""
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -14,14 +17,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# pylint: disable=W0102,W0703,C0103
+
 import logging
 import subprocess
 import tempfile
 
 
 class RClone:
+    """
+    Wrapper class for rclone.
+    """
+
     def __init__(self, cfg):
-        self.cfg = cfg
+        self.cfg = cfg.replace("\\n", "\n")
         self.log = logging.getLogger("RClone")
 
     def _execute(self, command_with_args):
@@ -29,7 +39,7 @@ class RClone:
         Execute the given `command_with_args` using Popen
 
         Args:
-            - command_with_args (list) : An array with the command to execute, 
+            - command_with_args (list) : An array with the command to execute,
                                          and its arguments. Each argument is given
                                          as a new element in the list.
         """
@@ -45,25 +55,25 @@ class RClone:
                 #err = proc.stderr.read()
 
                 self.log.debug(out)
-                if (err):
-                    self.log.warning(err.decode("utf-8").replace("\\n","\n"))
+                if err:
+                    self.log.warning(err.decode("utf-8").replace("\\n", "\n"))
 
                 return {
                     "code": proc.returncode,
                     "out": out,
                     "error": err
                 }
-        except FileNotFoundError as e:
-            self.log.error("Executable not found. %s", e)
+        except FileNotFoundError as not_found_e:
+            self.log.error("Executable not found. %s", not_found_e)
             return {
                 "code": -20,
-                "error": e
+                "error": not_found_e
             }
-        except Exception as e:
-            self.log.exception("Error running command. Reason: %s", e)
+        except Exception as generic_e:
+            self.log.exception("Error running command. Reason: %s", generic_e)
             return {
                 "code": -30,
-                "error": e
+                "error": generic_e
             }
 
     def run_cmd(self, command, extra_args=[]):
@@ -77,9 +87,8 @@ class RClone:
         # save the configuration in a temporary file
         with tempfile.NamedTemporaryFile(mode='wt', delete=True) as cfg_file:
             # cfg_file is automatically cleaned up by python
-            c = self.cfg.replace('\\n', '\n')
-            self.log.debug("rclone config: ~%s~", c)
-            cfg_file.write(c)
+            self.log.debug("rclone config: ~%s~", self.cfg)
+            cfg_file.write(self.cfg)
             cfg_file.flush()
 
             command_with_args = ["rclone", command, "--config", cfg_file.name]
@@ -126,7 +135,7 @@ class RClone:
         Args:
         - dest (string): A string "remote:path" representing the location to list.
         """
-        return self.run_cmd(command="ls", extra_args= [dest] + flags)
+        return self.run_cmd(command="ls", extra_args=[dest] + flags)
 
     def lsjson(self, dest, flags=[]):
         """
@@ -135,7 +144,7 @@ class RClone:
         Args:
         - dest (string): A string "remote:path" representing the location to list.
         """
-        return self.run_cmd(command="lsjson", extra_args= [dest] + flags)
+        return self.run_cmd(command="lsjson", extra_args=[dest] + flags)
 
     def delete(self, dest, flags=[]):
         """
@@ -146,13 +155,10 @@ class RClone:
         """
         return self.run_cmd(command="delete", extra_args=[dest] + flags)
 
+
 def with_config(cfg):
     """
     Configure a new RClone instance.
     """
     inst = RClone(cfg=cfg)
     return inst
-
-
-def test():
-    return True
