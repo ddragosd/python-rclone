@@ -18,6 +18,9 @@
 -->
 
 # python-rclone
+
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
 A Python wrapper for [rclone](https://rclone.org/).
 
 `rclone` must be already installed and discoverable in `$PATH`. 
