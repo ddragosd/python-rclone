@@ -31,7 +31,10 @@ class RClone:
     """
 
     def __init__(self, cfg):
-        self.cfg = cfg.replace("\\n", "\n")
+        if cfg:
+            self.cfg = cfg.replace("\\n", "\n")
+        else:
+            self.cfg = None
         self.log = logging.getLogger("RClone")
 
     def _execute(self, command_with_args):
@@ -85,16 +88,22 @@ class RClone:
             - extra_args (list): extra arguments to be passed to the rclone command
         """
         # save the configuration in a temporary file
-        with tempfile.NamedTemporaryFile(mode='wt', delete=True) as cfg_file:
-            # cfg_file is automatically cleaned up by python
-            self.log.debug("rclone config: ~%s~", self.cfg)
-            cfg_file.write(self.cfg)
-            cfg_file.flush()
+        if self.cfg:
+            with tempfile.NamedTemporaryFile(mode='wt', delete=True) as cfg_file:
+                # cfg_file is automatically cleaned up by python
+                self.log.debug("rclone config: ~%s~", self.cfg)
+                cfg_file.write(self.cfg)
+                cfg_file.flush()
 
-            command_with_args = ["rclone", command, "--config", cfg_file.name]
+                command_with_args = ["rclone", command, "--config", cfg_file.name]
+                command_with_args += extra_args
+                command_result = self._execute(command_with_args)
+                cfg_file.close()
+                return command_result
+        else:
+            command_with_args = ["rclone", command]
             command_with_args += extra_args
             command_result = self._execute(command_with_args)
-            cfg_file.close()
             return command_result
 
     def copy(self, source, dest, flags=[]):
@@ -161,4 +170,11 @@ def with_config(cfg):
     Configure a new RClone instance.
     """
     inst = RClone(cfg=cfg)
+    return inst
+
+def without_config():
+    """
+    Configure a new RClone instance and use default config file.
+    """
+    inst = RClone(cfg=None)
     return inst
