@@ -65,6 +65,19 @@ class RSyncTest(unittest.TestCase):
             self.assertRegex(result.get('out').decode("utf-8"),
                              r'.*\sREADME.md.*', "README.md was not listed.")
 
+    def test_copyto(self):
+        source = "local:" + os.getcwd() + "/README.md"
+        with tempfile.TemporaryDirectory() as dest:
+            result = rclone.with_config(self.cfg).copyto(
+                source, "local:" + dest + "/README2.md")
+            self.assertEqual(result.get('code'), 0)
+            self.assertEqual(result.get('out'), b'')
+
+            result = rclone.with_config(self.cfg).ls("local:"+dest)
+            self.assertEqual(result.get('code'), 0)
+            self.assertRegex(result.get('out').decode("utf-8"),
+                             r'.*\sREADME2.md.*', "README2.md was not listed.")
+
     def test_sync_and_lsjson(self):
         source = "local:" + os.getcwd() + "/README.md"
         with tempfile.TemporaryDirectory() as dest:
