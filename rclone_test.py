@@ -47,6 +47,18 @@ class RSyncTest(unittest.TestCase):
         self.assertEqual(result.get('code'), 0)
         self.assertIsNotNone(result.get('out'))
 
+    def test_with_config(self):
+        result = rclone.with_config(self.cfg).run_cmd('config', ['file'])
+        self.assertEqual(result.get('code'), 0)
+        self.assertRegex(result.get('out').decode('utf-8'),
+                         r'tmp')
+
+    def test_without_config(self):
+        result = rclone.without_config().run_cmd('config', ['file'])
+        self.assertEqual(result.get('code'), 0)
+        self.assertRegex(result.get('out').decode('utf-8'),
+                         r'.*rclone.conf')
+
     def test_listremoted(self):
         result = rclone.with_config(self.cfg).listremotes()
         self.assertEqual(result.get('code'), 0)

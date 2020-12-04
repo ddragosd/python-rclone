@@ -45,6 +45,9 @@ print(result.get('code'))
 # 0
 print(result.get('error'))
 # b''
+
+# Alternatively, if you want to allow rclone to use the default config file
+result = rclone.without_config().listremotes()
 ```
 
 ###  Implemented commands:
