@@ -23,6 +23,7 @@ A Python wrapper for rclone.
 import logging
 import subprocess
 import tempfile
+import os
 
 
 class RClone:
@@ -85,17 +86,15 @@ class RClone:
             - extra_args (list): extra arguments to be passed to the rclone command
         """
         # save the configuration in a temporary file
-        with tempfile.NamedTemporaryFile(mode='wt', delete=True) as cfg_file:
-            # cfg_file is automatically cleaned up by python
-            self.log.debug("rclone config: ~%s~", self.cfg)
-            cfg_file.write(self.cfg)
-            cfg_file.flush()
+        cfg_fd, cfg_name = tempfile.mkstemp()
+        with open(cfg_fd, 'w') as conf_file:
+            conf_file.write(self.cfg)
 
-            command_with_args = ["rclone", command, "--config", cfg_file.name]
-            command_with_args += extra_args
-            command_result = self._execute(command_with_args)
-            cfg_file.close()
-            return command_result
+        command_with_args = ["rclone", command, "--config", cfg_name]
+        command_with_args += extra_args
+        command_result = self._execute(command_with_args)
+        os.remove(cfg_name)
+        return command_result
 
     def copy(self, source, dest, flags=[]):
         """
