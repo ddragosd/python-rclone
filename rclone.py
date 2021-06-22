@@ -87,14 +87,12 @@ class RClone:
         """
         # save the configuration in a temporary file
         cfg_fd, cfg_name = tempfile.mkstemp()
-        with open(cfg_name, 'w') as conf_file:
+        with open(cfg_fd, 'w') as conf_file:
             conf_file.write(self.cfg)
-            conf_file.flush()
 
         command_with_args = ["rclone", command, "--config", cfg_name]
         command_with_args += extra_args
         command_result = self._execute(command_with_args)
-        os.close(cfg_fd)
         os.remove(cfg_name)
         return command_result
 
