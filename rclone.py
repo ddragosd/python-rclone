@@ -79,7 +79,7 @@ class RClone:
             }
     
  
-    def run_cmd(self, command, extra_args=[], redirect_stdout=False, redirect_stderr=False):
+    def run_cmd(self, command, extra_args=[], redirect_stdout=True, redirect_stderr=True):
         """
         Execute rclone command
 
