@@ -34,7 +34,7 @@ class RClone:
         self.cfg = cfg.replace("\\n", "\n")
         self.log = logging.getLogger("RClone")
 
-    def _execute(self, command_with_args):
+    def _execute(self, command_with_args, redirect_stdout=False, redirect_stderr=False):
         """
         Execute the given `command_with_args` using Popen
 
@@ -45,10 +45,12 @@ class RClone:
         """
         self.log.debug("Invoking : %s", " ".join(command_with_args))
         try:
+            stdout = subprocess.PIPE if redirect_stdout else None
+            stderr = subprocess.PIPE if redirect_stderr else None
             with subprocess.Popen(
                     command_with_args,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE) as proc:
+                    stdout=stdout,
+                    stderr=stderr) as proc:
                 (out, err) = proc.communicate()
 
                 #out = proc.stdout.read()
@@ -75,8 +77,9 @@ class RClone:
                 "code": -30,
                 "error": generic_e
             }
-
-    def run_cmd(self, command, extra_args=[]):
+    
+ 
+    def run_cmd(self, command, extra_args=[], redirect_stdout=False, redirect_stderr=False):
         """
         Execute rclone command
 
@@ -93,7 +96,9 @@ class RClone:
 
             command_with_args = ["rclone", command, "--config", cfg_file.name]
             command_with_args += extra_args
-            command_result = self._execute(command_with_args)
+
+            command_result = self._execute(command_with_args, redirect_stdout, redirect_stderr)
+
             cfg_file.close()
             return command_result
 

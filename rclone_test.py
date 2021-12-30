@@ -104,3 +104,7 @@ class RSyncTest(unittest.TestCase):
             self.assertEqual(result.get('code'), 0)
             result_json = json.loads(result.get('out').decode("utf-8"))
             self.assertEqual(len(result_json), 0)
+
+
+if __name__ == '__main__':
+    unittest.main()
