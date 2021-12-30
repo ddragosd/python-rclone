@@ -34,7 +34,7 @@ class RClone:
         self.cfg = cfg.replace("\\n", "\n")
         self.log = logging.getLogger("RClone")
 
-    def _execute(self, command_with_args, redirect_stdout=False, redirect_stderr=False):
+    def _execute(self, command_with_args, redirect_stdout=True, redirect_stderr=True):
         """
         Execute the given `command_with_args` using Popen
 
@@ -97,7 +97,7 @@ class RClone:
             command_with_args = ["rclone", command, "--config", cfg_file.name]
             command_with_args += extra_args
 
-            command_result = self._execute(command_with_args, redirect_stdout, redirect_stderr)
+            command_result = self._execute(command_with_args, redirect_stdout=redirect_stdout, redirect_stderr=redirect_stderr)
 
             cfg_file.close()
             return command_result
